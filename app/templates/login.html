@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="auth-shell">
+  <form class="auth-panel" method="post" action="/login">
+    <div>
+      <p class="eyebrow">Acesso</p>
+      <h1>Entrar</h1>
+    </div>
+
+    {% if error %}
+      <p class="alert">{{ error }}</p>
+    {% endif %}
+
+    <label>
+      E-mail
+      <input name="email" type="email" autocomplete="email" required>
+    </label>
+
+    <label>
+      Senha
+      <input name="password" type="password" autocomplete="current-password" required>
+    </label>
+
+    <button class="primary-button" type="submit">Entrar</button>
+
+    <p class="muted">Ainda nao tem conta? <a href="/register">Criar cadastro</a></p>
+  </form>
+</section>
+{% endblock %}

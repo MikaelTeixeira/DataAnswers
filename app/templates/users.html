@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="admin-page">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">Administracao</p>
+      <h1>Usuarios</h1>
+    </div>
+  </div>
+
+  {% if error %}
+    <p class="alert">{{ error }}</p>
+  {% endif %}
+
+  <div class="platform-list">
+    {% for account in users %}
+      <article class="user-row">
+        <div>
+          <h2>{{ account.name }}</h2>
+          <p class="muted">{{ account.email }}</p>
+        </div>
+        <form class="card-actions" method="post" action="/admin/users/{{ account.id }}/role">
+          <label class="check-row">
+            <input name="is_admin" type="checkbox" {% if account.is_admin %}checked{% endif %}>
+            Administrador
+          </label>
+          <button class="primary-button" type="submit">Salvar</button>
+        </form>
+      </article>
+    {% else %}
+      <p class="muted">Nenhum usuario cadastrado.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

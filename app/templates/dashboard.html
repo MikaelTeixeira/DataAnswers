@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="workspace">
+  <aside class="sidebar">
+    <div>
+      <p class="eyebrow">Gerador</p>
+      <h1>Respostas prontas</h1>
+      <p class="muted">Preencha os dados, escolha a plataforma e copie a resposta ideal.</p>
+    </div>
+
+    <label>
+      Nome do aluno
+      <input id="studentName" type="text" placeholder="Ex: Lucas Almeida" autocomplete="off">
+    </label>
+
+    <fieldset>
+      <legend>Genero do aluno</legend>
+      <label class="check-row">
+        <input id="studentMaleGender" type="checkbox" name="studentGender" value="male">
+        Masculino
+      </label>
+      <label class="check-row">
+        <input id="studentFemaleGender" type="checkbox" name="studentGender" value="female">
+        Feminino
+      </label>
+    </fieldset>
+
+    <label>
+      Nome do responsavel
+      <input id="guardianName" type="text" placeholder="Ex: Mariana Almeida" autocomplete="off">
+    </label>
+
+    <fieldset>
+      <legend>Genero do responsavel</legend>
+      <label class="check-row">
+        <input id="guardianMaleGender" type="checkbox" name="guardianGender" value="male">
+        Masculino
+      </label>
+      <label class="check-row">
+        <input id="guardianFemaleGender" type="checkbox" name="guardianGender" value="female">
+        Feminino
+      </label>
+    </fieldset>
+  </aside>
+
+  <section class="content-area">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Plataformas</p>
+        <h2>Respostas cadastradas</h2>
+      </div>
+      <span id="copyStatus" class="status-text" aria-live="polite"></span>
+    </div>
+
+    <div id="platformSelector" class="platform-selector"></div>
+    <div id="messageList" class="message-grid"></div>
+
+    {% if not platforms %}
+      <p class="alert">Nenhuma plataforma ativa cadastrada.</p>
+    {% endif %}
+  </section>
+</section>
+
+<script id="platformTemplates" type="application/json">{{ platforms | tojson }}</script>
+<script src="{{ url_for('static', path='/js/messages.js') }}"></script>
+{% endblock %}

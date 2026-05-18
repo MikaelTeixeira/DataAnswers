@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="admin-page">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">Administracao</p>
+      <h1>Respostas</h1>
+    </div>
+  </div>
+
+  {% if error %}
+    <p class="alert">{{ error }}</p>
+  {% endif %}
+
+  <form class="admin-form" method="get" action="/admin/responses">
+    <label>
+      Plataforma
+      <select name="platform_id" onchange="this.form.submit()">
+        {% for platform in platforms %}
+          <option value="{{ platform.id }}" {% if platform.id == selected_platform_id %}selected{% endif %}>
+            {{ platform.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </label>
+  </form>
+
+  <section class="token-help">
+    <h2>Campos automaticos</h2>
+    <div class="token-help-grid">
+      <p><code>@responsible_name</code> Nome do responsavel com tratamento: Sr. Rodrigo ou Sra. Patricia.</p>
+      <p><code>@student_name</code> Primeiro nome do aluno: Rafael, Ana, Lucas.</p>
+    </div>
+  </section>
+
+  {% if selected_platform_id %}
+    <form class="admin-form" method="post" action="/admin/responses">
+      <input name="platform_id" type="hidden" value="{{ selected_platform_id }}">
+      <div class="form-grid">
+        <label>
+          Titulo da resposta
+          <input name="title" type="text" placeholder="Ex: Senha esquecida" required>
+        </label>
+        <label>
+          Texto da resposta
+          <span class="token-editor">
+            <span class="token-highlight" aria-hidden="true"></span>
+            <textarea class="token-textarea" name="template_text" rows="5" placeholder="Ola, @responsible_name, vou pegar as notas de @student_name." required></textarea>
+          </span>
+        </label>
+      </div>
+      <button class="primary-button" type="submit">Adicionar resposta</button>
+    </form>
+  {% else %}
+    <p class="alert">Cadastre uma plataforma antes de adicionar respostas.</p>
+  {% endif %}
+
+  <div class="platform-list">
+    {% for response in responses %}
+      <article class="platform-row">
+        <form method="post" action="/admin/responses/{{ response.id }}/update">
+          <div class="form-grid">
+            <label>
+              Plataforma
+              <select name="platform_id">
+                {% for platform in platforms %}
+                  <option value="{{ platform.id }}" {% if platform.id == response.platform_id %}selected{% endif %}>
+                    {{ platform.name }}
+                  </option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>
+              Titulo
+              <input name="title" type="text" value="{{ response.title }}" required>
+            </label>
+            <label class="full-span">
+              Texto
+              <span class="token-editor">
+                <span class="token-highlight" aria-hidden="true"></span>
+                <textarea class="token-textarea" name="template_text" rows="5" required>{{ response.template_text }}</textarea>
+              </span>
+            </label>
+          </div>
+          <div class="card-actions">
+            <label class="check-row">
+              <input name="is_active" type="checkbox" {% if response.is_active %}checked{% endif %}>
+              Ativa
+            </label>
+            <button class="primary-button" type="submit">Salvar</button>
+          </div>
+        </form>
+        <form method="post" action="/admin/responses/{{ response.id }}/delete">
+          <button class="delete-button" type="submit">Excluir</button>
+        </form>
+      </article>
+    {% else %}
+      <p class="muted">Nenhuma resposta cadastrada para esta plataforma.</p>
+    {% endfor %}
+  </div>
+</section>
+<script src="{{ url_for('static', path='/js/response-editor.js') }}"></script>
+{% endblock %}

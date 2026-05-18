@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title or "Mensagens Automaticas" }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/dashboard">Mensagens Automaticas</a>
+      {% if user %}
+        <nav class="topnav">
+          <a href="/dashboard">Mensagens</a>
+          {% if user.is_admin %}
+            <a href="/admin/platforms">Plataformas</a>
+            <a href="/admin/responses">Respostas</a>
+            <a href="/admin/users">Usuarios</a>
+          {% endif %}
+          <form method="post" action="/logout">
+            <button class="ghost-button" type="submit">Sair</button>
+          </form>
+        </nav>
+      {% endif %}
+    </header>
+    <div class="logo-strip">
+      <a href="/dashboard" aria-label="Colegio Santa Ursula">
+        <img src="{{ url_for('static', path='/img/colegio-santa-ursula-logo.png') }}" alt="Colegio Santa Ursula">
+      </a>
+    </div>
+
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>

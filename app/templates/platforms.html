@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="admin-page">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">Administracao</p>
+      <h1>Plataformas</h1>
+    </div>
+  </div>
+
+  {% if error %}
+    <p class="alert">{{ error }}</p>
+  {% endif %}
+
+  <form class="admin-form" method="post" action="/admin/platforms">
+    <div class="form-grid">
+      <label>
+        Nova plataforma
+        <input name="name" type="text" placeholder="Ex: SAS" required>
+      </label>
+    </div>
+    <button class="primary-button" type="submit">Adicionar</button>
+  </form>
+
+  <div class="platform-list">
+    {% for platform in platforms %}
+      <article class="platform-row">
+        <form method="post" action="/admin/platforms/{{ platform.id }}/update">
+          <div class="form-grid">
+            <label>
+              Nome
+              <input name="name" type="text" value="{{ platform.name }}" required>
+            </label>
+          </div>
+          <div class="card-actions">
+            <label class="check-row">
+              <input name="is_active" type="checkbox" {% if platform.is_active %}checked{% endif %}>
+              Ativa
+            </label>
+            <button class="primary-button" type="submit">Salvar</button>
+          </div>
+        </form>
+        <form method="post" action="/admin/platforms/{{ platform.id }}/delete">
+          <button class="delete-button" type="submit">Excluir</button>
+        </form>
+      </article>
+    {% else %}
+      <p class="muted">Nenhuma plataforma cadastrada.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
