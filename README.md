@@ -1,4 +1,4 @@
-# Mensagens Automaticas
+# Ursula Reply
 
 Aplicacao web para criar, organizar e usar respostas prontas por plataforma. O sistema permite cadastrar usuarios, separar perfis de administrador e usuario comum, gerenciar plataformas e manter respostas dinamicas salvas em banco de dados MySQL.
 

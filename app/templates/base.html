@@ -4,15 +4,17 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="author" content="Mikael">
-    <title>{{ title or "Mensagens Automaticas" }}</title>
+    <title>{{ title or "Ursula Reply" }}</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', path='/img/santa-ursula-icon.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', path='/img/santa-ursula-icon.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
   </head>
   <body>
     <header class="topbar">
-      <a class="brand" href="/dashboard">Mensagens Automaticas</a>
+      <a class="brand" href="/dashboard">Ursula Reply</a>
       {% if user %}
         <nav class="topnav">
-          <a href="/dashboard">Mensagens</a>
+          <a href="/dashboard">Respostas</a>
           {% if user.is_admin %}
             <a href="/admin/platforms">Plataformas</a>
             <a href="/admin/responses">Respostas</a>

@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    app_name: str = "Mensagens Automaticas"
+    app_name: str = "Ursula Reply"
     database_url: str = "mysql+pymysql://root:root@localhost:3306/mensagens_automaticas"
     secret_key: str = "troque-esta-chave-em-producao"
 
