@@ -180,6 +180,12 @@ main {
   line-height: 1.5;
 }
 
+.disclaimer {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .sidebar {
   display: flex;
   flex-direction: column;
