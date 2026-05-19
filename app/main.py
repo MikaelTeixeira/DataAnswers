@@ -2,15 +2,16 @@ from typing import Annotated
 import logging
 
 from fastapi import Depends, FastAPI, Form, Request, status
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.sessions import SessionMiddleware
 
+from app.ai import AiGenerationError, generate_reply
 from app.auth import authenticate_user, get_user_by_email, hash_password
 from app.config import settings
 from app.database import get_db, init_db
@@ -193,17 +194,14 @@ def dashboard(
         {
             "id": platform.id,
             "name": platform.name,
-            "responses": [
-                {
-                    "id": response.id,
-                    "title": response.title,
-                    "text": response.template_text,
-                }
-                for response in db.scalars(
+            "structures": [
+                {"id": structure.id, "title": structure.title}
+                for structure in db.scalars(
                     select(ResponseTemplate)
                     .where(
                         ResponseTemplate.platform_id == platform.id,
                         ResponseTemplate.is_active.is_(True),
+                        or_(ResponseTemplate.owner_id.is_(None), ResponseTemplate.owner_id == user.id),
                     )
                     .order_by(ResponseTemplate.title)
                 ).all()
@@ -213,8 +211,130 @@ def dashboard(
     ]
     return templates.TemplateResponse(
         "dashboard.html",
-        {"request": request, "user": user, "platforms": platform_payload},
+        {"request": request, "user": user, "platforms": platforms, "platform_payload": platform_payload},
     )
+
+
+def first_name(name: str) -> str:
+    return name.strip().split()[0].title() if name.strip() else ""
+
+
+def build_ai_prompt(
+    platform: Platform,
+    structures: list[ResponseTemplate],
+    selected_structure: ResponseTemplate | None,
+    responsible_name: str,
+    student_name: str,
+    situation: str,
+    extra_details: str,
+) -> str:
+    structure_text = "\n\n".join(
+        f"Titulo: {structure.title}\nTexto/estrutura:\n{structure.template_text}"
+        for structure in structures
+    )
+    if not structure_text:
+        structure_text = "Nenhuma estrutura cadastrada para esta plataforma."
+    selected_structure_text = "Nenhuma estrutura especifica selecionada."
+    if selected_structure:
+        selected_structure_text = (
+            f"Titulo: {selected_structure.title}\n"
+            f"Texto/estrutura principal:\n{selected_structure.template_text}"
+        )
+
+    return f"""
+Crie uma resposta curta, educada e profissional para atendimento escolar.
+
+Dados:
+- Plataforma: {platform.name}
+- Responsavel: {first_name(responsible_name)}
+- Aluno: {first_name(student_name)}
+- Situacao: {situation.strip() or "Usar a estrutura selecionada como base principal"}
+- Detalhes ou pedido extra: {extra_details.strip() or "Nenhum"}
+
+Estrutura selecionada:
+{selected_structure_text}
+
+Estruturas cadastradas para esta plataforma:
+{structure_text}
+
+Regras:
+- Use apenas o primeiro nome do responsavel e do aluno.
+- Infira pelo nome se deve usar Sr. ou Sra. para o responsavel.
+- Infira pelo nome se deve usar do/da, o/a, ele/ela para o aluno.
+- Nas estruturas, <responsible> representa o responsavel e <student> representa o aluno.
+- Ao usar uma estrutura, substitua <responsible> e <student> pelos nomes corretos e ajuste pronomes/artigos naturalmente.
+- Se a estrutura selecionada existir, use-a como base principal.
+- Se nao houver estrutura selecionada, use as estruturas cadastradas apenas quando ajudarem na situacao.
+- Qualquer conteudo entre asteriscos (*) nas estruturas deve ser usado apenas como instrucao interna.
+- Nao copie para a mensagem final nenhum texto que esteja entre asteriscos.
+- Nao invente links, senhas, codigos, prazos ou informacoes que nao foram dadas.
+- Retorne apenas a mensagem final, sem explicacoes.
+""".strip()
+
+
+@app.post("/api/generate-reply")
+def generate_ai_reply(
+    user: Annotated[User, Depends(require_user)],
+    db: Annotated[Session, Depends(get_db)],
+    responsible_name: Annotated[str, Form()],
+    student_name: Annotated[str, Form()],
+    platform_id: Annotated[int, Form()],
+    situation: Annotated[str, Form()] = "",
+    extra_details: Annotated[str, Form()] = "",
+    use_structure: Annotated[str | None, Form()] = None,
+    structure_id: Annotated[int | None, Form()] = None,
+):
+    platform = db.get(Platform, platform_id)
+    if not platform or not platform.is_active:
+        return JSONResponse({"error": "Escolha uma plataforma ativa."}, status_code=400)
+
+    if not responsible_name.strip() or not student_name.strip():
+        return JSONResponse(
+            {"error": "Informe responsavel e aluno."},
+            status_code=400,
+        )
+
+    selected_structure = None
+    if use_structure == "on":
+        if not structure_id:
+            return JSONResponse({"error": "Escolha uma estrutura."}, status_code=400)
+        selected_structure = db.get(ResponseTemplate, structure_id)
+        if (
+            not selected_structure
+            or selected_structure.platform_id != platform.id
+            or not selected_structure.is_active
+            or (selected_structure.owner_id is not None and selected_structure.owner_id != user.id)
+        ):
+            return JSONResponse({"error": "Escolha uma estrutura ativa da plataforma selecionada."}, status_code=400)
+    elif not situation.strip():
+        return JSONResponse({"error": "Informe a situacao ou marque a opcao de usar estrutura."}, status_code=400)
+
+    structures = db.scalars(
+        select(ResponseTemplate)
+        .where(
+            ResponseTemplate.platform_id == platform.id,
+            ResponseTemplate.is_active.is_(True),
+            or_(ResponseTemplate.owner_id.is_(None), ResponseTemplate.owner_id == user.id),
+        )
+        .order_by(ResponseTemplate.title)
+    ).all()
+    prompt = build_ai_prompt(
+        platform=platform,
+        structures=structures,
+        selected_structure=selected_structure,
+        responsible_name=responsible_name,
+        student_name=student_name,
+        situation=situation,
+        extra_details=extra_details,
+    )
+
+    try:
+        reply = generate_reply(prompt)
+    except AiGenerationError as exc:
+        logger.warning("Nao foi possivel gerar resposta com IA: %s", exc)
+        return JSONResponse({"error": str(exc)}, status_code=400)
+
+    return {"reply": reply}
 
 
 @app.get("/admin/platforms", response_class=HTMLResponse)
@@ -303,7 +423,7 @@ def delete_platform(
 @app.get("/admin/responses", response_class=HTMLResponse)
 def responses_page(
     request: Request,
-    user: Annotated[User, Depends(require_admin)],
+    user: Annotated[User, Depends(require_user)],
     db: Annotated[Session, Depends(get_db)],
     platform_id: int | None = None,
 ):
@@ -313,7 +433,10 @@ def responses_page(
     if selected_platform_id:
         responses = db.scalars(
             select(ResponseTemplate)
-            .where(ResponseTemplate.platform_id == selected_platform_id)
+            .where(
+                ResponseTemplate.platform_id == selected_platform_id,
+                or_(ResponseTemplate.owner_id.is_(None), ResponseTemplate.owner_id == user.id),
+            )
             .order_by(ResponseTemplate.title)
         ).all()
 
@@ -333,7 +456,7 @@ def responses_page(
 @app.post("/admin/responses", response_class=HTMLResponse)
 def create_response(
     request: Request,
-    user: Annotated[User, Depends(require_admin)],
+    user: Annotated[User, Depends(require_user)],
     db: Annotated[Session, Depends(get_db)],
     platform_id: Annotated[int, Form()],
     title: Annotated[str, Form()],
@@ -346,7 +469,10 @@ def create_response(
         platforms = db.scalars(select(Platform).order_by(Platform.name)).all()
         responses = db.scalars(
             select(ResponseTemplate)
-            .where(ResponseTemplate.platform_id == platform_id)
+            .where(
+                ResponseTemplate.platform_id == platform_id,
+                or_(ResponseTemplate.owner_id.is_(None), ResponseTemplate.owner_id == user.id),
+            )
             .order_by(ResponseTemplate.title)
         ).all()
         return templates.TemplateResponse(
@@ -362,7 +488,8 @@ def create_response(
             status_code=status.HTTP_400_BAD_REQUEST,
         )
 
-    db.add(ResponseTemplate(platform_id=platform_id, title=title, template_text=template_text))
+    owner_id = None if user.is_admin else user.id
+    db.add(ResponseTemplate(platform_id=platform_id, owner_id=owner_id, title=title, template_text=template_text))
     db.commit()
     return RedirectResponse(
         url=f"/admin/responses?platform_id={platform_id}",
@@ -373,7 +500,7 @@ def create_response(
 @app.post("/admin/responses/{response_id}/update")
 def update_response(
     response_id: int,
-    user: Annotated[User, Depends(require_admin)],
+    user: Annotated[User, Depends(require_user)],
     db: Annotated[Session, Depends(get_db)],
     platform_id: Annotated[int, Form()],
     title: Annotated[str, Form()],
@@ -381,7 +508,8 @@ def update_response(
     is_active: Annotated[str | None, Form()] = None,
 ):
     response = db.get(ResponseTemplate, response_id)
-    if response and db.get(Platform, platform_id):
+    can_edit = response and (user.is_admin or response.owner_id == user.id)
+    if can_edit and db.get(Platform, platform_id):
         response.platform_id = platform_id
         response.title = title.strip()
         response.template_text = template_text.strip()
@@ -398,12 +526,12 @@ def update_response(
 @app.post("/admin/responses/{response_id}/delete")
 def delete_response(
     response_id: int,
-    user: Annotated[User, Depends(require_admin)],
+    user: Annotated[User, Depends(require_user)],
     db: Annotated[Session, Depends(get_db)],
 ):
     response = db.get(ResponseTemplate, response_id)
     platform_id = response.platform_id if response else ""
-    if response:
+    if response and (user.is_admin or response.owner_id == user.id):
         db.delete(response)
         db.commit()
     return RedirectResponse(

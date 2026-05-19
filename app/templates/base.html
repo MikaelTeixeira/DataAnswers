@@ -7,18 +7,18 @@
     <title>{{ title or "Ursula Reply" }}</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', path='/img/santa-ursula-icon.png') }}">
     <link rel="apple-touch-icon" href="{{ url_for('static', path='/img/santa-ursula-icon.png') }}">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}?v=20260519-4">
   </head>
   <body>
     <header class="topbar">
       <a class="brand" href="/dashboard">Ursula Reply</a>
       {% if user %}
         <nav class="topnav">
-          <a href="/dashboard">Respostas</a>
+          <a class="{% if request.url.path == '/dashboard' %}active{% endif %}" href="/dashboard">Respostas</a>
+          <a class="{% if request.url.path.startswith('/admin/responses') %}active{% endif %}" href="/admin/responses">Estruturas</a>
           {% if user.is_admin %}
-            <a href="/admin/platforms">Plataformas</a>
-            <a href="/admin/responses">Respostas</a>
-            <a href="/admin/users">Usuarios</a>
+            <a class="{% if request.url.path.startswith('/admin/platforms') %}active{% endif %}" href="/admin/platforms">Plataformas</a>
+            <a class="{% if request.url.path.startswith('/admin/users') %}active{% endif %}" href="/admin/users">Usuarios</a>
           {% endif %}
           <form method="post" action="/logout">
             <button class="ghost-button" type="submit">Sair</button>
@@ -35,5 +35,8 @@
     <main>
       {% block content %}{% endblock %}
     </main>
+    <footer class="app-footer">
+      Ursula Reply · Internal Support System · v1.0 · 2026.05 · Created by Mikael Teixeira
+    </footer>
   </body>
 </html>

@@ -4,8 +4,8 @@
 <section class="admin-page">
   <div class="section-heading">
     <div>
-      <p class="eyebrow">Administracao</p>
-      <h1>Respostas</h1>
+      <p class="eyebrow">{% if user.is_admin %}Administracao{% else %}Pessoal{% endif %}</p>
+      <h1>Estruturas</h1>
     </div>
   </div>
 
@@ -29,8 +29,13 @@
   <section class="token-help">
     <h2>Campos automaticos</h2>
     <div class="token-help-grid">
-      <p><code>@responsible_name</code> Nome do responsavel com tratamento: Sr. Rodrigo ou Sra. Patricia.</p>
-      <p><code>@student_name</code> Primeiro nome do aluno: Rafael, Ana, Lucas.</p>
+      <p><code>&lt;responsible&gt;</code> Nome do responsavel.</p>
+      <p><code>&lt;student&gt;</code> Nome do aluno.</p>
+      {% if user.is_admin %}
+        <p class="muted">Estruturas criadas por administradores ficam disponiveis para todos.</p>
+      {% else %}
+        <p class="muted">Estruturas criadas por voce ficam disponiveis apenas para sua conta.</p>
+      {% endif %}
     </div>
   </section>
 
@@ -39,18 +44,18 @@
       <input name="platform_id" type="hidden" value="{{ selected_platform_id }}">
       <div class="form-grid">
         <label>
-          Titulo da resposta
-          <input name="title" type="text" placeholder="Ex: Senha esquecida" required>
+          Titulo da estrutura
+          <input name="title" type="text" placeholder="Ex: Passo a passo de acesso" required>
         </label>
         <label>
-          Texto da resposta
+          Texto ou passo a passo
           <span class="token-editor">
-            <span class="token-highlight" aria-hidden="true"></span>
-            <textarea class="token-textarea" name="template_text" rows="5" placeholder="Ola, @responsible_name, vou pegar as notas de @student_name." required></textarea>
+            <textarea class="token-textarea" name="template_text" rows="5" placeholder="Ola, <responsible>. Irei redefinir a senha de <student>. So um momento." required></textarea>
+            <span class="token-preview" aria-hidden="true"></span>
           </span>
         </label>
       </div>
-      <button class="primary-button" type="submit">Adicionar resposta</button>
+      <button class="primary-button" type="submit">Adicionar estrutura</button>
     </form>
   {% else %}
     <p class="alert">Cadastre uma plataforma antes de adicionar respostas.</p>
@@ -59,46 +64,61 @@
   <div class="platform-list">
     {% for response in responses %}
       <article class="platform-row">
-        <form method="post" action="/admin/responses/{{ response.id }}/update">
-          <div class="form-grid">
-            <label>
-              Plataforma
-              <select name="platform_id">
-                {% for platform in platforms %}
-                  <option value="{{ platform.id }}" {% if platform.id == response.platform_id %}selected{% endif %}>
-                    {{ platform.name }}
-                  </option>
-                {% endfor %}
-              </select>
-            </label>
-            <label>
-              Titulo
-              <input name="title" type="text" value="{{ response.title }}" required>
-            </label>
-            <label class="full-span">
-              Texto
-              <span class="token-editor">
-                <span class="token-highlight" aria-hidden="true"></span>
-                <textarea class="token-textarea" name="template_text" rows="5" required>{{ response.template_text }}</textarea>
-              </span>
-            </label>
+        {% set can_edit = user.is_admin or response.owner_id == user.id %}
+        <div class="structure-meta">
+          {% if response.owner_id %}
+            <span>Minha estrutura</span>
+          {% else %}
+            <span>Global</span>
+          {% endif %}
+        </div>
+        {% if can_edit %}
+          <form method="post" action="/admin/responses/{{ response.id }}/update">
+            <div class="form-grid">
+              <label>
+                Plataforma
+                <select name="platform_id">
+                  {% for platform in platforms %}
+                    <option value="{{ platform.id }}" {% if platform.id == response.platform_id %}selected{% endif %}>
+                      {{ platform.name }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </label>
+              <label>
+                Titulo
+                <input name="title" type="text" value="{{ response.title }}" required>
+              </label>
+              <label class="full-span">
+                Texto
+                <span class="token-editor">
+                  <textarea class="token-textarea" name="template_text" rows="5" required>{{ response.template_text }}</textarea>
+                  <span class="token-preview" aria-hidden="true"></span>
+                </span>
+              </label>
+            </div>
+            <div class="card-actions">
+              <label class="check-row">
+                <input name="is_active" type="checkbox" {% if response.is_active %}checked{% endif %}>
+                Ativa
+              </label>
+              <button class="primary-button" type="submit">Salvar</button>
+            </div>
+          </form>
+          <form method="post" action="/admin/responses/{{ response.id }}/delete">
+            <button class="delete-button" type="submit">Excluir</button>
+          </form>
+        {% else %}
+          <div class="readonly-structure">
+            <h2>{{ response.title }}</h2>
+            <p>{{ response.template_text }}</p>
           </div>
-          <div class="card-actions">
-            <label class="check-row">
-              <input name="is_active" type="checkbox" {% if response.is_active %}checked{% endif %}>
-              Ativa
-            </label>
-            <button class="primary-button" type="submit">Salvar</button>
-          </div>
-        </form>
-        <form method="post" action="/admin/responses/{{ response.id }}/delete">
-          <button class="delete-button" type="submit">Excluir</button>
-        </form>
+        {% endif %}
       </article>
     {% else %}
-      <p class="muted">Nenhuma resposta cadastrada para esta plataforma.</p>
+      <p class="muted">Nenhuma estrutura cadastrada para esta plataforma.</p>
     {% endfor %}
   </div>
 </section>
-<script src="{{ url_for('static', path='/js/response-editor.js') }}"></script>
+<script src="{{ url_for('static', path='/js/response-editor.js') }}?v=20260519-5"></script>
 {% endblock %}

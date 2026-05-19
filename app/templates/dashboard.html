@@ -1,67 +1,78 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section class="workspace">
-  <aside class="sidebar">
+<section class="ai-workspace">
+  <form id="aiReplyForm" class="generator-panel">
     <div>
       <p class="eyebrow">Gerador</p>
-      <h1>Respostas prontas</h1>
-      <p class="muted">Preencha os dados, escolha a plataforma e copie a resposta ideal.</p>
+      <h1>Resposta com IA</h1>
+      <p class="muted">Informe os dados do atendimento e gere uma mensagem pronta para copiar.</p>
+    </div>
+
+    <div class="person-grid">
+      <label>
+        Nome do responsavel
+        <input id="responsibleName" name="responsible_name" type="text" placeholder="Ex: Mariana Almeida" autocomplete="off" required>
+      </label>
+      <label>
+        Nome do aluno
+        <input id="studentName" name="student_name" type="text" placeholder="Ex: Lucas Almeida" autocomplete="off" required>
+      </label>
+    </div>
+
+    <div class="request-grid">
+      <label>
+        Plataforma
+        <select id="platformId" name="platform_id" required>
+          {% for platform in platforms %}
+            <option value="{{ platform.id }}">{{ platform.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label class="check-row use-structure-row">
+        <input id="useStructure" name="use_structure" type="checkbox">
+        Usar estrutura
+      </label>
+    </div>
+
+    <label id="structureField" class="hidden-field">
+      Estrutura
+      <select id="structureId" name="structure_id"></select>
+    </label>
+
+    <div id="situationField">
+      <label>
+        Situacao
+        <input id="situation" name="situation" type="text" placeholder="Ex: responsavel esqueceu a senha" required>
+      </label>
     </div>
 
     <label>
-      Nome do aluno
-      <input id="studentName" type="text" placeholder="Ex: Lucas Almeida" autocomplete="off">
+      Detalhes ou pedido opcional
+      <textarea id="extraDetails" name="extra_details" rows="4" placeholder="Ex: mensagem mais curta, tom mais formal, incluir passo a passo cadastrado no admin"></textarea>
     </label>
 
-    <fieldset>
-      <legend>Genero do aluno</legend>
-      <label class="check-row">
-        <input id="studentMaleGender" type="checkbox" name="studentGender" value="male">
-        Masculino
-      </label>
-      <label class="check-row">
-        <input id="studentFemaleGender" type="checkbox" name="studentGender" value="female">
-        Feminino
-      </label>
-    </fieldset>
+    <button class="primary-button" type="submit">Gerar resposta</button>
+  </form>
 
-    <label>
-      Nome do responsavel
-      <input id="guardianName" type="text" placeholder="Ex: Mariana Almeida" autocomplete="off">
-    </label>
-
-    <fieldset>
-      <legend>Genero do responsavel</legend>
-      <label class="check-row">
-        <input id="guardianMaleGender" type="checkbox" name="guardianGender" value="male">
-        Masculino
-      </label>
-      <label class="check-row">
-        <input id="guardianFemaleGender" type="checkbox" name="guardianGender" value="female">
-        Feminino
-      </label>
-    </fieldset>
-  </aside>
-
-  <section class="content-area">
+  <section class="reply-panel">
     <div class="section-heading">
       <div>
-        <p class="eyebrow">Plataformas</p>
-        <h2>Respostas cadastradas</h2>
+        <p class="eyebrow">Resultado</p>
+        <h2>Mensagem gerada</h2>
       </div>
-      <span id="copyStatus" class="status-text" aria-live="polite"></span>
+      <span id="generationStatus" class="status-text" aria-live="polite"></span>
     </div>
 
-    <div id="platformSelector" class="platform-selector"></div>
-    <div id="messageList" class="message-grid"></div>
+    <div id="generatedReply" class="generated-reply">A resposta gerada aparecera aqui.</div>
 
-    {% if not platforms %}
-      <p class="alert">Nenhuma plataforma ativa cadastrada.</p>
-    {% endif %}
+    <div class="card-actions">
+      <button id="copyGeneratedReply" class="copy-button" type="button">Copiar</button>
+    </div>
   </section>
 </section>
 
-<script id="platformTemplates" type="application/json">{{ platforms | tojson }}</script>
-<script src="{{ url_for('static', path='/js/messages.js') }}"></script>
+<script id="platformData" type="application/json">{{ platform_payload | tojson }}</script>
+<script src="{{ url_for('static', path='/js/ai-generator.js') }}?v=20260519-2"></script>
 {% endblock %}

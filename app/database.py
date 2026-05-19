@@ -54,9 +54,16 @@ def ensure_schema_updates() -> None:
         return
 
     user_columns = {column["name"] for column in inspector.get_columns("users")}
+    response_columns = set()
+    if "response_templates" in inspector.get_table_names():
+        response_columns = {column["name"] for column in inspector.get_columns("response_templates")}
+
     with engine.begin() as connection:
         if "is_admin" not in user_columns:
             connection.execute(text("ALTER TABLE users ADD COLUMN is_admin BOOL NOT NULL DEFAULT 0"))
+        if "response_templates" in inspector.get_table_names() and "owner_id" not in response_columns:
+            connection.execute(text("ALTER TABLE response_templates ADD COLUMN owner_id INT NULL"))
+            connection.execute(text("CREATE INDEX ix_response_templates_owner_id ON response_templates (owner_id)"))
 
 
 def seed_default_platforms() -> None:

@@ -1,4 +1,4 @@
-const tokenPattern = /(@responsible_name|@student_name)/g;
+const tokenPattern = /(&lt;responsible&gt;|&lt;student&gt;|@responsible_formal|@responsible_name|@responsible_title|@responsible_article|@responsible_subject|@responsible_object|@responsible_possessive|@responsible|@student_name|@student_pronoun|@student_article|@student_subject|@student_object|@student_possessive|@student)/g;
 
 function escapeHtml(value) {
   return value
@@ -7,9 +7,9 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;");
 }
 
-function renderHighlight(textarea, highlight) {
+function renderPreview(textarea, preview) {
   const escapedText = escapeHtml(textarea.value || textarea.placeholder || "");
-  highlight.innerHTML = escapedText.replace(
+  preview.innerHTML = escapedText.replace(
     tokenPattern,
     '<span class="token-mark">$1</span>'
   );
@@ -17,13 +17,9 @@ function renderHighlight(textarea, highlight) {
 
 for (const editor of document.querySelectorAll(".token-editor")) {
   const textarea = editor.querySelector(".token-textarea");
-  const highlight = editor.querySelector(".token-highlight");
+  const preview = editor.querySelector(".token-preview");
 
-  renderHighlight(textarea, highlight);
+  renderPreview(textarea, preview);
 
-  textarea.addEventListener("input", () => renderHighlight(textarea, highlight));
-  textarea.addEventListener("scroll", () => {
-    highlight.scrollTop = textarea.scrollTop;
-    highlight.scrollLeft = textarea.scrollLeft;
-  });
+  textarea.addEventListener("input", () => renderPreview(textarea, preview));
 }
