@@ -1,3 +1,4 @@
+import os
 from collections.abc import Generator
 
 from sqlalchemy import create_engine, inspect, text
@@ -17,10 +18,19 @@ class Base(DeclarativeBase):
 
 def ensure_database_exists() -> None:
     url = make_url(settings.database_url)
+    if url.drivername.startswith("sqlite") and url.database:
+        database_path = os.path.abspath(url.database)
+        database_dir = os.path.dirname(database_path)
+        if database_dir:
+            os.makedirs(database_dir, exist_ok=True)
+        if not os.path.exists(database_path):
+            open(database_path, "a", encoding="utf-8").close()
+        return
+
     if not url.drivername.startswith("mysql") or not url.database:
         return
 
-    server_url = url.set(database=None)
+    server_url = url.set(database="")
     database_name = url.database.replace("`", "``")
     server_engine = create_engine(server_url, pool_pre_ping=True)
 
@@ -61,6 +71,8 @@ def ensure_schema_updates() -> None:
     with engine.begin() as connection:
         if "is_admin" not in user_columns:
             connection.execute(text("ALTER TABLE users ADD COLUMN is_admin BOOL NOT NULL DEFAULT 0"))
+        if "is_approved" not in user_columns:
+            connection.execute(text("ALTER TABLE users ADD COLUMN is_approved BOOL NOT NULL DEFAULT 1"))
         if "response_templates" in inspector.get_table_names() and "owner_id" not in response_columns:
             connection.execute(text("ALTER TABLE response_templates ADD COLUMN owner_id INT NULL"))
             connection.execute(text("CREATE INDEX ix_response_templates_owner_id ON response_templates (owner_id)"))
@@ -144,6 +156,7 @@ def seed_default_admin() -> None:
                 email="mikael@ursula.com.br",
                 password_hash=hash_password("mikael10#"),
                 is_admin=True,
+                is_approved=True,
             )
         )
         db.commit()

@@ -13,24 +13,78 @@
     <p class="alert">{{ error }}</p>
   {% endif %}
 
-  <div class="platform-list">
-    {% for account in users %}
-      <article class="user-row">
-        <div>
-          <h2>{{ account.name }}</h2>
-          <p class="muted">{{ account.email }}</p>
-        </div>
-        <form class="card-actions" method="post" action="/admin/users/{{ account.id }}/role">
-          <label class="check-row">
-            <input name="is_admin" type="checkbox" {% if account.is_admin %}checked{% endif %}>
-            Administrador
-          </label>
-          <button class="primary-button" type="submit">Salvar</button>
-        </form>
-      </article>
-    {% else %}
-      <p class="muted">Nenhum usuario cadastrado.</p>
-    {% endfor %}
-  </div>
+  <section class="admin-section">
+    <div>
+      <p class="eyebrow">Pedidos</p>
+      <h2>Cadastros aguardando aprovacao</h2>
+    </div>
+
+    <div class="platform-list">
+      {% for account in pending_users %}
+        <article class="user-row user-editor">
+          <div>
+            <h2>{{ account.name }}</h2>
+            <p class="muted">{{ account.email }}</p>
+            <span class="status-pill">Pendente</span>
+          </div>
+          <div class="card-actions">
+            <form method="post" action="/admin/users/{{ account.id }}/approve">
+              <button class="primary-button" type="submit">Aprovar</button>
+            </form>
+            <form method="post" action="/admin/users/{{ account.id }}/reject">
+              <button class="delete-button" type="submit">Recusar</button>
+            </form>
+          </div>
+        </article>
+      {% else %}
+        <p class="muted">Nenhum pedido pendente.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="admin-section">
+    <div>
+      <p class="eyebrow">Aprovados</p>
+      <h2>Usuarios ativos</h2>
+    </div>
+
+    <div class="platform-list">
+      {% for account in approved_users %}
+        <article class="user-row user-editor">
+          <form class="user-edit-form" method="post" action="/admin/users/{{ account.id }}/update">
+            <label>
+              Nome
+              <input name="name" type="text" value="{{ account.name }}" required>
+            </label>
+
+            <label>
+              E-mail
+              <input name="email" type="email" value="{{ account.email }}" required>
+            </label>
+
+            <label>
+              Nova senha
+              <input name="password" type="password" minlength="6" placeholder="Manter senha atual">
+            </label>
+
+            <div class="user-flags">
+              <label class="check-row">
+                <input name="is_admin" type="checkbox" {% if account.is_admin %}checked{% endif %}>
+                Administrador
+              </label>
+              <label class="check-row">
+                <input name="is_approved" type="checkbox" {% if account.is_approved %}checked{% endif %}>
+                Aprovado
+              </label>
+            </div>
+
+            <button class="primary-button" type="submit">Salvar</button>
+          </form>
+        </article>
+      {% else %}
+        <p class="muted">Nenhum usuario aprovado.</p>
+      {% endfor %}
+    </div>
+  </section>
 </section>
 {% endblock %}

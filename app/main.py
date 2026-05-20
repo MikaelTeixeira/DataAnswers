@@ -39,7 +39,11 @@ def current_user(request: Request, db: Annotated[Session, Depends(get_db)]) -> U
     user_id = request.session.get("user_id")
     if not user_id:
         return None
-    return db.get(User, user_id)
+    user = db.get(User, user_id)
+    if user and not user.is_approved:
+        request.session.clear()
+        return None
+    return user
 
 
 def require_user(user: Annotated[User | None, Depends(current_user)]) -> User:
@@ -108,6 +112,12 @@ def login(
             {"request": request, "user": None, "error": "E-mail ou senha invalidos."},
             status_code=status.HTTP_400_BAD_REQUEST,
         )
+    if not user.is_approved:
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request, "user": None, "error": "Seu cadastro ainda esta aguardando aprovacao."},
+            status_code=status.HTTP_403_FORBIDDEN,
+        )
 
     request.session["user_id"] = user.id
     return RedirectResponse(url="/dashboard", status_code=status.HTTP_303_SEE_OTHER)
@@ -159,6 +169,7 @@ def register(
             email=email,
             password_hash=hash_password(password),
             is_admin=is_first_user,
+            is_approved=is_first_user,
         )
         db.add(user)
         db.commit()
@@ -179,8 +190,19 @@ def register(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
-    request.session["user_id"] = user.id
-    return RedirectResponse(url="/dashboard", status_code=status.HTTP_303_SEE_OTHER)
+    if user.is_approved:
+        request.session["user_id"] = user.id
+        return RedirectResponse(url="/dashboard", status_code=status.HTTP_303_SEE_OTHER)
+
+    return templates.TemplateResponse(
+        "login.html",
+        {
+            "request": request,
+            "user": None,
+            "error": "Cadastro enviado. Aguarde a aprovacao de um administrador para entrar.",
+        },
+        status_code=status.HTTP_201_CREATED,
+    )
 
 
 @app.get("/dashboard", response_class=HTMLResponse)
@@ -540,48 +562,153 @@ def delete_response(
     )
 
 
+def users_context(db: Session) -> dict[str, list[User]]:
+    return {
+        "pending_users": db.scalars(
+            select(User).where(User.is_approved.is_(False)).order_by(User.created_at.desc())
+        ).all(),
+        "approved_users": db.scalars(
+            select(User).where(User.is_approved.is_(True)).order_by(User.name)
+        ).all(),
+    }
+
+
 @app.get("/admin/users", response_class=HTMLResponse)
 def users_page(
     request: Request,
     user: Annotated[User, Depends(require_admin)],
     db: Annotated[Session, Depends(get_db)],
 ):
-    users = db.scalars(select(User).order_by(User.name)).all()
     return templates.TemplateResponse(
         "users.html",
-        {"request": request, "user": user, "users": users, "error": None},
+        {"request": request, "user": user, "error": None, **users_context(db)},
     )
 
 
-@app.post("/admin/users/{user_id}/role", response_class=HTMLResponse)
-def update_user_role(
+@app.post("/admin/users/{user_id}/update", response_class=HTMLResponse)
+def update_user(
     user_id: int,
     request: Request,
     current_admin: Annotated[User, Depends(require_admin)],
     db: Annotated[Session, Depends(get_db)],
+    name: Annotated[str, Form()],
+    email: Annotated[str, Form()],
+    password: Annotated[str, Form()] = "",
     is_admin: Annotated[str | None, Form()] = None,
+    is_approved: Annotated[str | None, Form()] = None,
 ):
     target_user = db.get(User, user_id)
     if not target_user:
         return RedirectResponse(url="/admin/users", status_code=status.HTTP_303_SEE_OTHER)
 
+    name = name.strip()
+    email = email.lower().strip()
+    password = password.strip()
     wants_admin = is_admin == "on"
-    admin_count = db.scalar(select(func.count()).select_from(User).where(User.is_admin.is_(True)))
-    if target_user.is_admin and not wants_admin and admin_count <= 1:
-        users = db.scalars(select(User).order_by(User.name)).all()
+    wants_approved = is_approved == "on"
+
+    if not name or not email:
         return templates.TemplateResponse(
             "users.html",
             {
                 "request": request,
                 "user": current_admin,
-                "users": users,
-                "error": "Mantenha pelo menos um administrador.",
+                "error": "Informe nome e e-mail do usuario.",
+                **users_context(db),
             },
             status_code=status.HTTP_400_BAD_REQUEST,
         )
 
+    existing_user = get_user_by_email(db, email)
+    if existing_user and existing_user.id != target_user.id:
+        return templates.TemplateResponse(
+            "users.html",
+            {
+                "request": request,
+                "user": current_admin,
+                "error": "Ja existe outro usuario com este e-mail.",
+                **users_context(db),
+            },
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if password and len(password) < 6:
+        return templates.TemplateResponse(
+            "users.html",
+            {
+                "request": request,
+                "user": current_admin,
+                "error": "A nova senha precisa ter pelo menos 6 caracteres.",
+                **users_context(db),
+            },
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if len(password.encode("utf-8")) > 72:
+        return templates.TemplateResponse(
+            "users.html",
+            {
+                "request": request,
+                "user": current_admin,
+                "error": "A nova senha precisa ter no maximo 72 bytes.",
+                **users_context(db),
+            },
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    approved_admin_count = db.scalar(
+        select(func.count())
+        .select_from(User)
+        .where(User.is_admin.is_(True), User.is_approved.is_(True))
+    )
+    removes_approved_admin = target_user.is_admin and target_user.is_approved and (
+        not wants_admin or not wants_approved
+    )
+    if removes_approved_admin and approved_admin_count <= 1:
+        return templates.TemplateResponse(
+            "users.html",
+            {
+                "request": request,
+                "user": current_admin,
+                "error": "Mantenha pelo menos um administrador.",
+                **users_context(db),
+            },
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    target_user.name = name
+    target_user.email = email
+    if password:
+        target_user.password_hash = hash_password(password)
     target_user.is_admin = wants_admin
+    target_user.is_approved = wants_approved
     db.commit()
+    return RedirectResponse(url="/admin/users", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@app.post("/admin/users/{user_id}/approve")
+def approve_user(
+    user_id: int,
+    user: Annotated[User, Depends(require_admin)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    target_user = db.get(User, user_id)
+    if target_user:
+        target_user.is_approved = True
+        db.commit()
+    return RedirectResponse(url="/admin/users", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@app.post("/admin/users/{user_id}/reject")
+def reject_user(
+    user_id: int,
+    user: Annotated[User, Depends(require_admin)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    target_user = db.get(User, user_id)
+    if target_user and not target_user.is_approved:
+        db.delete(target_user)
+        db.commit()
     return RedirectResponse(url="/admin/users", status_code=status.HTTP_303_SEE_OTHER)
 
 

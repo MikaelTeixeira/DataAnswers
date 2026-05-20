@@ -426,6 +426,7 @@ select:focus {
 }
 
 .admin-page,
+.admin-section,
 .admin-form,
 .platform-list {
   display: grid;
@@ -487,6 +488,35 @@ select:focus {
 .user-row {
   grid-template-columns: 1fr auto;
   align-items: center;
+}
+
+.user-editor {
+  grid-template-columns: 1fr;
+}
+
+.user-edit-form {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(220px, 1.3fr) minmax(180px, 1fr) auto auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.user-flags {
+  display: grid;
+  gap: 8px;
+  min-width: 140px;
+}
+
+.status-pill {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 4px 8px;
+  color: var(--accent-dark);
+  background: var(--yellow-soft);
+  border: 1px solid #efd26a;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
 }
 
 .form-grid {
@@ -613,6 +643,10 @@ select:focus {
   }
 
   .user-row {
+    grid-template-columns: 1fr;
+  }
+
+  .user-edit-form {
     grid-template-columns: 1fr;
   }
 }
