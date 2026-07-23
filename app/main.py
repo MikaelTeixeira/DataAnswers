@@ -983,6 +983,52 @@ def update_user(
     return RedirectResponse(url="/admin/users", status_code=status.HTTP_303_SEE_OTHER)
 
 
+@app.post("/admin/users/{user_id}/delete", response_class=HTMLResponse)
+def delete_user(
+    user_id: int,
+    request: Request,
+    current_admin: Annotated[User, Depends(require_admin)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    target_user = db.get(User, user_id)
+    if not target_user:
+        return RedirectResponse(url="/admin/users", status_code=status.HTTP_303_SEE_OTHER)
+
+    if target_user.id == current_admin.id:
+        return templates.TemplateResponse(
+            "users.html",
+            {
+                "request": request,
+                "user": current_admin,
+                "error": "Voce nao pode excluir a propria conta.",
+                **users_context(db),
+            },
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if target_user.is_admin and target_user.is_approved:
+        approved_admin_count = db.scalar(
+            select(func.count())
+            .select_from(User)
+            .where(User.is_admin.is_(True), User.is_approved.is_(True))
+        )
+        if approved_admin_count <= 1:
+            return templates.TemplateResponse(
+                "users.html",
+                {
+                    "request": request,
+                    "user": current_admin,
+                    "error": "Mantenha pelo menos um administrador.",
+                    **users_context(db),
+                },
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+
+    db.delete(target_user)
+    db.commit()
+    return RedirectResponse(url="/admin/users", status_code=status.HTTP_303_SEE_OTHER)
+
+
 @app.post("/admin/users/{user_id}/approve")
 def approve_user(
     user_id: int,

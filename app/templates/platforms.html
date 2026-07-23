@@ -26,24 +26,24 @@
   <div class="platform-list">
     {% for platform in platforms %}
       <article class="platform-row">
-        <form method="post" action="/admin/platforms/{{ platform.id }}/update">
+        <form id="platformUpdate{{ platform.id }}" method="post" action="/admin/platforms/{{ platform.id }}/update">
           <div class="form-grid">
             <label>
               Nome
               <input name="name" type="text" value="{{ platform.name }}" required>
             </label>
           </div>
-          <div class="card-actions">
-            <label class="check-row">
-              <input name="is_active" type="checkbox" {% if platform.is_active %}checked{% endif %}>
-              Ativa
-            </label>
-            <button class="primary-button" type="submit">Salvar</button>
-          </div>
         </form>
-        <form method="post" action="/admin/platforms/{{ platform.id }}/delete">
-          <button class="delete-button" type="submit">Excluir</button>
-        </form>
+        <div class="card-actions record-actions">
+          <label class="check-row">
+            <input form="platformUpdate{{ platform.id }}" name="is_active" type="checkbox" {% if platform.is_active %}checked{% endif %}>
+            Ativa
+          </label>
+          <button class="primary-button" form="platformUpdate{{ platform.id }}" type="submit">Salvar</button>
+          <form method="post" action="/admin/platforms/{{ platform.id }}/delete">
+            <button class="delete-button" type="submit">Excluir</button>
+          </form>
+        </div>
       </article>
     {% else %}
       <p class="muted">Nenhuma plataforma cadastrada.</p>

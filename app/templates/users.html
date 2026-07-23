@@ -117,6 +117,17 @@
 
             <button class="primary-button" type="submit">Salvar</button>
           </form>
+          {% if account.id != user.id %}
+            <form
+              class="user-delete-form"
+              method="post"
+              action="/admin/users/{{ account.id }}/delete"
+              onsubmit="return confirm('Excluir permanentemente o usuario {{ account.name | e }}?')"
+            >
+              <span>Esta ação também remove os conteúdos privados vinculados à conta.</span>
+              <button class="delete-button" type="submit">Excluir usuário</button>
+            </form>
+          {% endif %}
         </article>
       {% else %}
         <p class="muted">Nenhum usuario aprovado.</p>
