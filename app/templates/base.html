@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="author" content="Mikael Teixeira">
     <meta name="theme-color" content="#173f42">
-    <title>{{ title or "ReplyFlow" }}</title>
-    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', path='/img/replyflow-mark.svg') }}">
+    <title>{{ title or "DataAnswers" }}</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', path='/img/dataanswers-mark.svg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&family=Syne:wght@600;700&display=swap" rel="stylesheet">
@@ -17,9 +17,9 @@
     {% if user %}
       <div class="app-frame">
         <aside class="app-sidebar">
-          <a class="brand" href="/dashboard" aria-label="ReplyFlow — página inicial">
-            <img src="{{ url_for('static', path='/img/replyflow-mark.svg') }}" alt="" width="34" height="34">
-            <span>ReplyFlow</span>
+          <a class="brand" href="/dashboard" aria-label="DataAnswers — página inicial">
+            <img src="{{ url_for('static', path='/img/dataanswers-mark.svg') }}" alt="" width="34" height="34">
+            <span>DataAnswers</span>
           </a>
           <p class="nav-label">Seu espaço</p>
           <nav class="topnav" aria-label="Navegação principal">
@@ -41,12 +41,12 @@
         </aside>
         <div class="app-content">
           <header class="mobile-header">
-            <a class="brand" href="/dashboard"><img src="{{ url_for('static', path='/img/replyflow-mark.svg') }}" alt="" width="30" height="30"><span>ReplyFlow</span></a>
+            <a class="brand" href="/dashboard"><img src="{{ url_for('static', path='/img/dataanswers-mark.svg') }}" alt="" width="30" height="30"><span>DataAnswers</span></a>
             <button class="mobile-nav-toggle" type="button" aria-label="Abrir navegação" aria-expanded="false">Menu</button>
           </header>
     {% else %}
       <header class="public-header">
-        <a class="brand" href="/" aria-label="ReplyFlow — página inicial"><img src="{{ url_for('static', path='/img/replyflow-mark.svg') }}" alt="" width="34" height="34"><span>ReplyFlow</span></a>
+        <a class="brand" href="/" aria-label="DataAnswers — página inicial"><img src="{{ url_for('static', path='/img/dataanswers-mark.svg') }}" alt="" width="34" height="34"><span>DataAnswers</span></a>
         <span>Atendimento com contexto</span>
       </header>
     {% endif %}
@@ -54,11 +54,11 @@
     <main id="main-content">{% block content %}{% endblock %}</main>
 
     {% if user %}
-          <footer class="app-footer">ReplyFlow · Respostas mais claras, atendimentos mais humanos.</footer>
+          <footer class="app-footer">DataAnswers · Respostas mais claras, atendimentos mais humanos.</footer>
         </div>
       </div>
     {% else %}
-      <footer class="app-footer">ReplyFlow · Criado por Mikael Teixeira</footer>
+      <footer class="app-footer">DataAnswers · Criado por Mikael Teixeira</footer>
     {% endif %}
     {% if user %}
       <script>

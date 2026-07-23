@@ -1,4 +1,4 @@
-# ReplyFlow
+# DataAnswers
 
 ![Status](https://img.shields.io/badge/status-em%20desenvolvimento-eea94b)
 ![Version](https://img.shields.io/badge/version-1.0.0-0d5c63)
@@ -29,7 +29,7 @@ An AI-assisted web application for organizing service responses, reusable templa
 
 ### Description
 
-ReplyFlow helps support teams turn incoming requests into clear, consistent replies. Users can organize communication channels, create reusable response structures, define writing personalities and generate contextual drafts with AI.
+DataAnswers helps support teams turn incoming requests into clear, consistent replies. Users can organize communication channels, create reusable response structures, define writing personalities and generate contextual drafts with AI.
 
 ### Features
 
@@ -79,8 +79,8 @@ Browser → FastAPI routes → business rules → SQLAlchemy → MySQL
 #### Running the project
 
 ```bash
-git clone https://github.com/MikaelTeixeira/ReplyFlow.git
-cd ReplyFlow
+git clone https://github.com/MikaelTeixeira/DataAnswers.git
+cd DataAnswers
 python -m venv venv
 ```
 
@@ -130,7 +130,7 @@ Never commit `.env` or production credentials.
 
 ### Descrição
 
-O ReplyFlow ajuda equipes de atendimento a transformar solicitações recebidas em respostas claras e consistentes. Os usuários podem organizar canais de comunicação, criar estruturas reutilizáveis, definir personalidades de escrita e gerar rascunhos contextualizados com IA.
+O DataAnswers ajuda equipes de atendimento a transformar solicitações recebidas em respostas claras e consistentes. Os usuários podem organizar canais de comunicação, criar estruturas reutilizáveis, definir personalidades de escrita e gerar rascunhos contextualizados com IA.
 
 ### Funcionalidades
 
@@ -180,8 +180,8 @@ Navegador → rotas FastAPI → regras da aplicação → SQLAlchemy → MySQL
 #### Rodando o projeto
 
 ```bat
-git clone https://github.com/MikaelTeixeira/ReplyFlow.git
-cd ReplyFlow
+git clone https://github.com/MikaelTeixeira/DataAnswers.git
+cd DataAnswers
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt

@@ -2,7 +2,7 @@
 
 ## Tokens
 
-- ReplyFlow does not assume fixed people or fields for an interaction.
+- DataAnswers does not assume fixed people or fields for an interaction.
 - A token is a reusable marker written as `<name>` inside a response structure.
 - Token names accept lowercase letters, numbers and underscores; input is normalized before storage.
 - Administrators create global tokens. Standard users create tokens visible only to their own account.
