@@ -29,8 +29,8 @@
   <section class="token-help">
     <h2>Campos automaticos</h2>
     <div class="token-help-grid">
-      <p><code>&lt;responsible&gt;</code> Nome do responsavel.</p>
-      <p><code>&lt;student&gt;</code> Nome do aluno.</p>
+      <p>Use tokens cadastrados como <code>&lt;cliente&gt;</code>, <code>&lt;protocolo&gt;</code> ou <code>&lt;prazo&gt;</code>.</p>
+      <p>Os valores devem ser informados no campo <strong>Informacoes dos tokens</strong> ao gerar a resposta.</p>
       {% if user.is_admin %}
         <p class="muted">Estruturas criadas por administradores ficam disponiveis para todos.</p>
       {% else %}
@@ -62,9 +62,14 @@
     <p class="alert">Cadastre uma plataforma antes de adicionar respostas.</p>
   {% endif %}
 
-  <div class="platform-list">
+  <label class="list-search">
+    Buscar estruturas
+    <input type="search" data-list-search="structuresList" placeholder="Busque por titulo ou texto da estrutura" autocomplete="off">
+  </label>
+
+  <div id="structuresList" class="platform-list">
     {% for response in responses %}
-      <article class="platform-row">
+      <article class="platform-row" data-search-item>
         {% set can_edit = user.is_admin or response.owner_id == user.id %}
         <div class="structure-meta">
           {% if response.owner_id %}
@@ -119,7 +124,9 @@
     {% else %}
       <p class="muted">Nenhuma estrutura cadastrada para esta plataforma.</p>
     {% endfor %}
+    <p class="muted empty-search-result" data-empty-search hidden>Nenhuma estrutura encontrada para esta busca.</p>
   </div>
 </section>
-<script src="{{ url_for('static', path='/js/response-editor.js') }}?v=20260519-5"></script>
+<script src="{{ url_for('static', path='/js/response-editor.js') }}?v=20260526-1"></script>
+<script src="{{ url_for('static', path='/js/list-search.js') }}?v=20260526-2"></script>
 {% endblock %}

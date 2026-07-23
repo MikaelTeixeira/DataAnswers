@@ -1,79 +1,82 @@
 {% extends "base.html" %}
 
 {% block content %}
+<section class="dashboard-intro">
+  <div>
+    <p class="eyebrow">Mesa de atendimento</p>
+    <h1>Transforme contexto em uma<br><span>resposta que soa humana.</span></h1>
+  </div>
+  <p class="intro-note">Organize a solicitação, escolha o tom e revise antes de enviar. O DataAnswers cuida do primeiro rascunho.</p>
+</section>
+
 <section class="ai-workspace">
   <form id="aiReplyForm" class="generator-panel">
-    <div>
-      <p class="eyebrow">Gerador</p>
-      <h1>Resposta com IA</h1>
-      <p class="muted">Informe os dados do atendimento e gere uma mensagem pronta para copiar.</p>
+    <div class="panel-heading">
+      <span class="step-number">01</span>
+      <div><p class="eyebrow">Contexto</p><h2>O que chegou até você?</h2></div>
     </div>
-
-    <div class="person-grid">
-      <label>
-        Nome do responsavel
-        <input id="responsibleName" name="responsible_name" type="text" placeholder="Ex: Mariana Almeida" autocomplete="off" required>
-      </label>
-      <label>
-        Nome do aluno
-        <input id="studentName" name="student_name" type="text" placeholder="Ex: Lucas Almeida" autocomplete="off" required>
-      </label>
-    </div>
-
     <div class="request-grid">
-      <label>
-        Plataforma
+      <label>Plataforma
         <select id="platformId" name="platform_id" required>
-          {% for platform in platforms %}
-            <option value="{{ platform.id }}">{{ platform.name }}</option>
-          {% endfor %}
+          {% for platform in platforms %}<option value="{{ platform.id }}">{{ platform.name }}</option>{% endfor %}
         </select>
       </label>
-
+      <label>Personalidade
+        <select name="personality_id">
+          <option value="">Padrão profissional</option>
+          {% for personality in personalities %}<option value="{{ personality.id }}">{{ personality.name }}</option>{% endfor %}
+        </select>
+      </label>
+    </div>
+    <label>Mensagem recebida <span class="optional-label">opcional</span>
+      <textarea name="responsible_messages" rows="5" placeholder="Cole aqui a mensagem da pessoa para preservar o contexto do atendimento."></textarea>
+    </label>
+    <div class="structure-control">
       <label class="check-row use-structure-row">
         <input id="useStructure" name="use_structure" type="checkbox">
-        Usar estrutura
+        <span><strong>Usar uma estrutura pronta</strong><small>Mantenha o padrão da sua equipe.</small></span>
       </label>
+      <label id="structureField" class="hidden-field">Estrutura<select id="structureId" name="structure_id"></select></label>
     </div>
-
-    <label id="structureField" class="hidden-field">
-      Estrutura
-      <select id="structureId" name="structure_id"></select>
-    </label>
-
     <div id="situationField">
-      <label>
-        Situacao
-        <input id="situation" name="situation" type="text" placeholder="Ex: responsavel esqueceu a senha" required>
-      </label>
+      <label>Resuma a situação<input id="situation" name="situation" type="text" placeholder="Ex.: cliente não consegue acessar a conta" required></label>
     </div>
-
-    <label>
-      Detalhes ou pedido opcional
-      <textarea id="extraDetails" name="extra_details" rows="4" placeholder="Ex: mensagem mais curta, tom mais formal, incluir passo a passo cadastrado no admin"></textarea>
+    <label>Informações dos tokens <span class="optional-label">opcional</span>
+      <textarea name="token_values" rows="3" placeholder="cliente: Mariana; protocolo: 4821; prazo: sexta-feira"></textarea>
+      <span class="field-hint">Separe cada informação com ponto e vírgula.</span>
     </label>
-
-    <button class="primary-button" type="submit">Gerar resposta</button>
+    {% if tokens %}
+      <details class="available-tokens">
+        <summary>Ver tokens disponíveis <span>{{ tokens | length }}</span></summary>
+        <div class="token-list">
+          {% for token in tokens %}<span><code>&lt;{{ token.name }}&gt;</code> {{ token.description }}</span>{% endfor %}
+        </div>
+      </details>
+    {% endif %}
+    <label>Algum pedido específico? <span class="optional-label">opcional</span>
+      <textarea id="extraDetails" name="extra_details" rows="3" placeholder="Ex.: seja breve, use um tom mais formal ou inclua um passo a passo."></textarea>
+    </label>
+    <button class="primary-button generate-button" type="submit"><span>Gerar primeira versão</span><span aria-hidden="true">→</span></button>
   </form>
 
   <section class="reply-panel">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">Resultado</p>
-        <h2>Mensagem gerada</h2>
-      </div>
+    <div class="panel-heading">
+      <span class="step-number">02</span>
+      <div><p class="eyebrow">Revisão</p><h2>Sua resposta, pronta para lapidar.</h2></div>
       <span id="generationStatus" class="status-text" aria-live="polite"></span>
     </div>
-
-    <div id="generatedReply" class="generated-reply">A resposta gerada aparecera aqui.</div>
-    <p class="disclaimer">Confira a mensagem antes de enviar. O conteúdo gerado pode precisar de ajustes.</p>
-
-    <div class="card-actions">
-      <button id="copyGeneratedReply" class="copy-button" type="button">Copiar</button>
+    <div class="conversation-preview">
+      <div class="message-origin"><span>DA</span><div><strong>DataAnswers</strong><small>Rascunho de atendimento</small></div></div>
+      <div id="generatedReply" class="generated-reply">A resposta gerada aparecerá aqui. Preencha o contexto ao lado para começar.</div>
+      <div class="message-time">Agora · ainda não enviada</div>
+    </div>
+    <div class="reply-footer">
+      <p class="disclaimer">Revise nomes, datas e informações sensíveis antes de enviar.</p>
+      <div class="card-actions"><button id="copyGeneratedReply" class="copy-button" type="button">Copiar resposta</button></div>
     </div>
   </section>
 </section>
 
 <script id="platformData" type="application/json">{{ platform_payload | tojson }}</script>
-<script src="{{ url_for('static', path='/js/ai-generator.js') }}?v=20260519-2"></script>
+<script src="{{ url_for('static', path='/js/ai-generator.js') }}?v=20260723-3"></script>
 {% endblock %}

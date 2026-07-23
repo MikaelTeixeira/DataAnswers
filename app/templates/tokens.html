@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="admin-page">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">{% if user.is_admin %}Administracao{% else %}Pessoal{% endif %}</p>
+      <h1>Tokens</h1>
+      <p class="muted">Crie marcadores reutilizaveis para preencher estruturas com informacoes do atendimento.</p>
+    </div>
+  </div>
+
+  {% if error %}<p class="alert">{{ error }}</p>{% endif %}
+
+  <section class="token-help">
+    <h2>Como funciona</h2>
+    <p class="muted">Use o token entre sinais de menor e maior na estrutura, por exemplo <code>&lt;cliente&gt;</code>.</p>
+    <p class="muted">Ao gerar uma resposta, informe os valores no campo <strong>Informacoes dos tokens</strong>. Exemplo: <code>cliente: Marina; protocolo: 4821</code>.</p>
+  </section>
+
+  <form class="admin-form" method="post" action="/tokens">
+    <div class="form-grid">
+      <label>
+        Nome do token
+        <input name="name" type="text" placeholder="Ex: protocolo" pattern="[A-Za-z0-9_-]+" required>
+      </label>
+      <label>
+        Descricao
+        <input name="description" type="text" placeholder="Ex: Numero do atendimento" maxlength="255" required>
+      </label>
+    </div>
+    <button class="primary-button" type="submit">Adicionar token</button>
+  </form>
+
+  <label class="list-search">
+    Buscar tokens
+    <input type="search" data-list-search="tokensList" placeholder="Busque por nome ou descricao" autocomplete="off">
+  </label>
+
+  <div id="tokensList" class="platform-list">
+    {% for token in tokens %}
+      <article class="platform-row" data-search-item>
+        {% set can_edit = user.is_admin or token.owner_id == user.id %}
+        <div class="structure-meta"><span>{% if token.owner_id %}Meu token{% else %}Global{% endif %}</span></div>
+        {% if can_edit %}
+          <form method="post" action="/tokens/{{ token.id }}/update">
+            <div class="form-grid">
+              <label>Nome <input name="name" type="text" value="{{ token.name }}" pattern="[A-Za-z0-9_-]+" required></label>
+              <label>Descricao <input name="description" type="text" value="{{ token.description }}" maxlength="255" required></label>
+            </div>
+            <div class="card-actions">
+              <label class="check-row"><input name="is_active" type="checkbox" {% if token.is_active %}checked{% endif %}> Ativo</label>
+              <button class="primary-button" type="submit">Salvar</button>
+            </div>
+          </form>
+          <form method="post" action="/tokens/{{ token.id }}/delete">
+            <button class="delete-button" type="submit">Excluir</button>
+          </form>
+        {% else %}
+          <div class="readonly-structure"><h2><code>&lt;{{ token.name }}&gt;</code></h2><p>{{ token.description }}</p></div>
+        {% endif %}
+      </article>
+    {% else %}
+      <p class="muted">Nenhum token cadastrado.</p>
+    {% endfor %}
+    <p class="muted empty-search-result" data-empty-search hidden>Nenhum token encontrado para esta busca.</p>
+  </div>
+</section>
+<script src="{{ url_for('static', path='/js/list-search.js') }}?v=20260715-1"></script>
+{% endblock %}

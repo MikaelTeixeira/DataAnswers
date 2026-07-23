@@ -52,7 +52,6 @@ def init_db() -> None:
     ensure_database_exists()
     Base.metadata.create_all(bind=engine)
     ensure_schema_updates()
-    seed_default_admin()
     ensure_default_admin()
     seed_default_platforms()
     seed_default_responses()
@@ -84,15 +83,15 @@ def seed_default_platforms() -> None:
     default_platforms = [
         (
             "WhatsApp",
-            "Ola, {responsavel}. Tudo bem? Passando para informar que {aluno} ja recebeu o atendimento e seguimos acompanhando {o_a} aluno com atencao. Qualquer duvida, fico a disposicao.",
+            "Ola, <cliente>. Tudo bem? Recebemos sua solicitacao e seguimos acompanhando o atendimento. Protocolo: <protocolo>. Qualquer duvida, ficamos a disposicao.",
         ),
         (
             "E-mail",
-            "Prezado(a) {responsavel},\n\nInformamos que {aluno} recebeu o atendimento solicitado. Nossa equipe permanecera acompanhando o desenvolvimento {dele_dela} e retornara caso haja novas orientacoes.\n\nAtenciosamente.",
+            "Ola, <cliente>.\n\nSua solicitacao foi recebida e esta em acompanhamento pela nossa equipe. O prazo estimado e <prazo>.\n\nAtenciosamente.",
         ),
         (
             "Sistema interno",
-            "Atendimento registrado para {aluno}. Responsavel: {responsavel}. Genero informado: {genero}. Encaminhamento concluido e disponivel para acompanhamento.",
+            "Atendimento <protocolo> registrado para <cliente>. Encaminhamento concluido e disponivel para acompanhamento.",
         ),
     ]
 
@@ -139,26 +138,6 @@ def ensure_default_admin() -> None:
             return
 
         first_user.is_admin = True
-        db.commit()
-
-
-def seed_default_admin() -> None:
-    from app.auth import hash_password
-    from app.models import User
-
-    with SessionLocal() as db:
-        if db.query(User).count() > 0:
-            return
-
-        db.add(
-            User(
-                name="mikael",
-                email="mikael@ursula.com.br",
-                password_hash=hash_password("mikael10#"),
-                is_admin=True,
-                is_approved=True,
-            )
-        )
         db.commit()
 
 

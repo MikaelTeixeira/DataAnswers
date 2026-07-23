@@ -3,40 +3,72 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="author" content="Mikael">
-    <title>{{ title or "Ursula Reply" }}</title>
-    <link rel="icon" type="image/png" href="{{ url_for('static', path='/img/santa-ursula-icon.png') }}">
-    <link rel="apple-touch-icon" href="{{ url_for('static', path='/img/santa-ursula-icon.png') }}">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}?v=20260519-4">
+    <meta name="author" content="Mikael Teixeira">
+    <meta name="theme-color" content="#173f42">
+    <title>{{ title or "DataAnswers" }}</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', path='/img/dataanswers-mark.svg') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&family=Syne:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}?v=20260723-2">
   </head>
   <body>
-    <header class="topbar">
-      <a class="brand" href="/dashboard">Ursula Reply</a>
-      {% if user %}
-        <nav class="topnav">
-          <a class="{% if request.url.path == '/dashboard' %}active{% endif %}" href="/dashboard">Respostas</a>
-          <a class="{% if request.url.path.startswith('/admin/responses') %}active{% endif %}" href="/admin/responses">Estruturas</a>
-          {% if user.is_admin %}
-            <a class="{% if request.url.path.startswith('/admin/platforms') %}active{% endif %}" href="/admin/platforms">Plataformas</a>
-            <a class="{% if request.url.path.startswith('/admin/users') %}active{% endif %}" href="/admin/users">Usuarios</a>
-          {% endif %}
-          <form method="post" action="/logout">
-            <button class="ghost-button" type="submit">Sair</button>
-          </form>
-        </nav>
-      {% endif %}
-    </header>
-    <div class="logo-strip">
-      <a href="/dashboard" aria-label="Colegio Santa Ursula">
-        <img src="{{ url_for('static', path='/img/colegio-santa-ursula-logo.png') }}" alt="Colegio Santa Ursula">
-      </a>
-    </div>
+    <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
+    {% if user %}
+      <div class="app-frame">
+        <aside class="app-sidebar">
+          <a class="brand" href="/dashboard" aria-label="DataAnswers — página inicial">
+            <img src="{{ url_for('static', path='/img/dataanswers-mark.svg') }}" alt="" width="34" height="34">
+            <span>DataAnswers</span>
+          </a>
+          <p class="nav-label">Seu espaço</p>
+          <nav class="topnav" aria-label="Navegação principal">
+            <a class="{% if request.url.path == '/dashboard' %}active{% endif %}" href="/dashboard"><span class="nav-icon" aria-hidden="true">↗</span> Criar resposta</a>
+            <a class="{% if request.url.path.startswith('/admin/responses') %}active{% endif %}" href="/admin/responses"><span class="nav-icon" aria-hidden="true">≡</span> Estruturas</a>
+            <a class="{% if request.url.path.startswith('/personalities') %}active{% endif %}" href="/personalities"><span class="nav-icon" aria-hidden="true">◌</span> Personalidades</a>
+            <a class="{% if request.url.path.startswith('/tokens') %}active{% endif %}" href="/tokens"><span class="nav-icon" aria-hidden="true">{ }</span> Tokens</a>
+            {% if user.is_admin %}
+              <p class="nav-label nav-label-admin">Administração</p>
+              <a class="{% if request.url.path.startswith('/admin/platforms') %}active{% endif %}" href="/admin/platforms"><span class="nav-icon" aria-hidden="true">⌘</span> Plataformas</a>
+              <a class="{% if request.url.path.startswith('/admin/users') %}active{% endif %}" href="/admin/users"><span class="nav-icon" aria-hidden="true">◎</span> Usuários</a>
+            {% endif %}
+          </nav>
+          <div class="sidebar-account">
+            <span class="account-avatar">{{ user.name[:2] | upper }}</span>
+            <span class="account-copy"><strong>{{ user.name }}</strong><small>{% if user.is_admin %}Administrador{% else %}Atendimento{% endif %}</small></span>
+            <form method="post" action="/logout"><button class="logout-button" type="submit" aria-label="Sair">↪</button></form>
+          </div>
+        </aside>
+        <div class="app-content">
+          <header class="mobile-header">
+            <a class="brand" href="/dashboard"><img src="{{ url_for('static', path='/img/dataanswers-mark.svg') }}" alt="" width="30" height="30"><span>DataAnswers</span></a>
+            <button class="mobile-nav-toggle" type="button" aria-label="Abrir navegação" aria-expanded="false">Menu</button>
+          </header>
+    {% else %}
+      <header class="public-header">
+        <a class="brand" href="/" aria-label="DataAnswers — página inicial"><img src="{{ url_for('static', path='/img/dataanswers-mark.svg') }}" alt="" width="34" height="34"><span>DataAnswers</span></a>
+        <span>Atendimento com contexto</span>
+      </header>
+    {% endif %}
 
-    <main>
-      {% block content %}{% endblock %}
-    </main>
-    <footer class="app-footer">
-      Ursula Reply · Internal Support System · v1.0 · 2026.05 · Created by Mikael Teixeira
-    </footer>
+    <main id="main-content">{% block content %}{% endblock %}</main>
+
+    {% if user %}
+          <footer class="app-footer">DataAnswers · Respostas mais claras, atendimentos mais humanos.</footer>
+        </div>
+      </div>
+    {% else %}
+      <footer class="app-footer">DataAnswers · Criado por Mikael Teixeira</footer>
+    {% endif %}
+    {% if user %}
+      <script>
+        const navToggle = document.querySelector(".mobile-nav-toggle");
+        const appSidebar = document.querySelector(".app-sidebar");
+        navToggle?.addEventListener("click", () => {
+          const isOpen = appSidebar.classList.toggle("is-open");
+          navToggle.setAttribute("aria-expanded", String(isOpen));
+        });
+      </script>
+    {% endif %}
   </body>
 </html>
