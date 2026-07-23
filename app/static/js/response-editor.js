@@ -1,4 +1,4 @@
-const tokenPattern = /(&lt;responsible&gt;|&lt;student&gt;|@responsible_formal|@responsible_name|@responsible_title|@responsible_article|@responsible_subject|@responsible_object|@responsible_possessive|@responsible|@student_name|@student_pronoun|@student_article|@student_subject|@student_object|@student_possessive|@student)/g;
+const tokenPattern = /(&lt;[a-zA-Z0-9_-]+&gt;)/g;
 
 function escapeHtml(value) {
   return value

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="admin-page">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">{% if user.is_admin %}Administracao{% else %}Pessoal{% endif %}</p>
+      <h1>Personalidades</h1>
+    </div>
+  </div>
+
+  {% if error %}
+    <p class="alert">{{ error }}</p>
+  {% endif %}
+
+  <section class="token-help">
+    <h2>Como funciona</h2>
+    {% if user.is_admin %}
+      <p class="muted">Personalidades criadas por administradores ficam disponiveis para todos os usuarios.</p>
+    {% else %}
+      <p class="muted">Personalidades criadas por voce ficam disponiveis apenas para sua conta.</p>
+    {% endif %}
+    <p class="muted">Use as instrucoes para definir o tom, a objetividade e o estilo da resposta gerada.</p>
+  </section>
+
+  <form class="admin-form" method="post" action="/personalities">
+    <div class="form-grid">
+      <label>
+        Nome
+        <input name="name" type="text" placeholder="Ex: Amigavel e direta" required>
+      </label>
+      <label>
+        Dicas e regras
+        <textarea name="instructions" rows="5" placeholder="Seja amigavel, direto e fale de forma humana." required></textarea>
+      </label>
+    </div>
+    <button class="primary-button" type="submit">Adicionar personalidade</button>
+  </form>
+
+  <label class="list-search">
+    Buscar personalidades
+    <input type="search" data-list-search="personalitiesList" placeholder="Busque por nome ou regra da personalidade" autocomplete="off">
+  </label>
+
+  <div id="personalitiesList" class="platform-list">
+    {% for personality in personalities %}
+      <article class="platform-row" data-search-item>
+        {% set can_edit = user.is_admin or personality.owner_id == user.id %}
+        <div class="structure-meta">
+          <span>{% if personality.owner_id %}Minha personalidade{% else %}Global{% endif %}</span>
+        </div>
+        {% if can_edit %}
+          <form method="post" action="/personalities/{{ personality.id }}/update">
+            <div class="form-grid">
+              <label>
+                Nome
+                <input name="name" type="text" value="{{ personality.name }}" required>
+              </label>
+              <label>
+                Dicas e regras
+                <textarea name="instructions" rows="5" required>{{ personality.instructions }}</textarea>
+              </label>
+            </div>
+            <div class="card-actions">
+              <label class="check-row">
+                <input name="is_active" type="checkbox" {% if personality.is_active %}checked{% endif %}>
+                Ativa
+              </label>
+              <button class="primary-button" type="submit">Salvar</button>
+            </div>
+          </form>
+          <form method="post" action="/personalities/{{ personality.id }}/delete">
+            <button class="delete-button" type="submit">Excluir</button>
+          </form>
+        {% else %}
+          <div class="readonly-structure">
+            <h2>{{ personality.name }}</h2>
+            <p>{{ personality.instructions }}</p>
+          </div>
+        {% endif %}
+      </article>
+    {% else %}
+      <p class="muted">Nenhuma personalidade cadastrada.</p>
+    {% endfor %}
+    <p class="muted empty-search-result" data-empty-search hidden>Nenhuma personalidade encontrada para esta busca.</p>
+  </div>
+</section>
+<script src="{{ url_for('static', path='/js/list-search.js') }}?v=20260526-2"></script>
+{% endblock %}

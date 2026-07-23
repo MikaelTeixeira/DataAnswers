@@ -4,11 +4,11 @@ Este projeto foi desenvolvido por Mikael.
 
 ## Projeto
 
-Ursula Reply
+ReplyFlow
 
 ## Descricao
 
-Aplicacao web para gerenciar plataformas, usuarios e respostas prontas dinamicas, com controle de perfis administrativos e armazenamento em banco de dados MySQL.
+Aplicacao web para organizar atendimentos, usuarios e modelos de resposta com apoio de inteligencia artificial e armazenamento em banco de dados MySQL.
 
 ## Assinatura
 

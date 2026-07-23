@@ -3,22 +3,26 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="author" content="Mikael">
-    <title>{{ title or "Ursula Reply" }}</title>
-    <link rel="icon" type="image/png" href="{{ url_for('static', path='/img/santa-ursula-icon.png') }}">
-    <link rel="apple-touch-icon" href="{{ url_for('static', path='/img/santa-ursula-icon.png') }}">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}?v=20260519-4">
+    <meta name="author" content="Mikael Teixeira">
+    <title>{{ title or "ReplyFlow" }}</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', path='/img/replyflow-mark.svg') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}?v=20260715-1">
   </head>
   <body>
     <header class="topbar">
-      <a class="brand" href="/dashboard">Ursula Reply</a>
+      <a class="brand" href="/dashboard" aria-label="ReplyFlow — página inicial">
+        <img src="{{ url_for('static', path='/img/replyflow-mark.svg') }}" alt="" width="30" height="30">
+        <span>ReplyFlow</span>
+      </a>
       {% if user %}
         <nav class="topnav">
           <a class="{% if request.url.path == '/dashboard' %}active{% endif %}" href="/dashboard">Respostas</a>
           <a class="{% if request.url.path.startswith('/admin/responses') %}active{% endif %}" href="/admin/responses">Estruturas</a>
+          <a class="{% if request.url.path.startswith('/personalities') %}active{% endif %}" href="/personalities">Personalidades</a>
+          <a class="{% if request.url.path.startswith('/tokens') %}active{% endif %}" href="/tokens">Tokens</a>
           {% if user.is_admin %}
             <a class="{% if request.url.path.startswith('/admin/platforms') %}active{% endif %}" href="/admin/platforms">Plataformas</a>
-            <a class="{% if request.url.path.startswith('/admin/users') %}active{% endif %}" href="/admin/users">Usuarios</a>
+            <a class="{% if request.url.path.startswith('/admin/users') %}active{% endif %}" href="/admin/users">Usuários</a>
           {% endif %}
           <form method="post" action="/logout">
             <button class="ghost-button" type="submit">Sair</button>
@@ -26,17 +30,15 @@
         </nav>
       {% endif %}
     </header>
-    <div class="logo-strip">
-      <a href="/dashboard" aria-label="Colegio Santa Ursula">
-        <img src="{{ url_for('static', path='/img/colegio-santa-ursula-logo.png') }}" alt="Colegio Santa Ursula">
-      </a>
+    <div class="product-strip" aria-hidden="true">
+      <span></span><span></span><span></span>
     </div>
 
     <main>
       {% block content %}{% endblock %}
     </main>
     <footer class="app-footer">
-      Ursula Reply · Internal Support System · v1.0 · 2026.05 · Created by Mikael Teixeira
+      ReplyFlow · Assistente de atendimento · Projeto público · Criado por Mikael Teixeira
     </footer>
   </body>
 </html>

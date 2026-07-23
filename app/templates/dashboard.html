@@ -9,17 +9,6 @@
       <p class="muted">Informe os dados do atendimento e gere uma mensagem pronta para copiar.</p>
     </div>
 
-    <div class="person-grid">
-      <label>
-        Nome do responsavel
-        <input id="responsibleName" name="responsible_name" type="text" placeholder="Ex: Mariana Almeida" autocomplete="off" required>
-      </label>
-      <label>
-        Nome do aluno
-        <input id="studentName" name="student_name" type="text" placeholder="Ex: Lucas Almeida" autocomplete="off" required>
-      </label>
-    </div>
-
     <div class="request-grid">
       <label>
         Plataforma
@@ -41,10 +30,40 @@
       <select id="structureId" name="structure_id"></select>
     </label>
 
+    <label>
+      Personalidade (opcional)
+      <select name="personality_id">
+        <option value="">Padrao profissional</option>
+        {% for personality in personalities %}
+          <option value="{{ personality.id }}">{{ personality.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>
+      Mensagem recebida (opcional)
+      <textarea name="responsible_messages" rows="5" placeholder="Cole aqui a mensagem recebida para a IA entender o contexto do atendimento."></textarea>
+    </label>
+
+    <label>
+      Informacoes dos tokens (opcional)
+      <textarea name="token_values" rows="5" placeholder="Ex: cliente: Mariana; protocolo: 4821; prazo: sexta-feira"></textarea>
+      <span class="field-hint">Informe aqui os valores dos tokens usados na estrutura. A IA usara este contexto para substituir os marcadores.</span>
+    </label>
+
+    {% if tokens %}
+      <div class="available-tokens" aria-label="Tokens disponiveis">
+        <strong>Tokens disponiveis</strong>
+        {% for token in tokens %}
+          <span><code>&lt;{{ token.name }}&gt;</code> {{ token.description }}</span>
+        {% endfor %}
+      </div>
+    {% endif %}
+
     <div id="situationField">
       <label>
         Situacao
-        <input id="situation" name="situation" type="text" placeholder="Ex: responsavel esqueceu a senha" required>
+        <input id="situation" name="situation" type="text" placeholder="Ex: cliente nao consegue acessar a conta" required>
       </label>
     </div>
 
@@ -75,5 +94,5 @@
 </section>
 
 <script id="platformData" type="application/json">{{ platform_payload | tojson }}</script>
-<script src="{{ url_for('static', path='/js/ai-generator.js') }}?v=20260519-2"></script>
+<script src="{{ url_for('static', path='/js/ai-generator.js') }}?v=20260715-2"></script>
 {% endblock %}

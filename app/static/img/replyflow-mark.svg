@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">ReplyFlow</title>
+  <rect width="64" height="64" rx="18" fill="#0d5c63"/>
+  <path d="M15 19h25a9 9 0 0 1 9 9v3a9 9 0 0 1-9 9H29l-9 8v-8h-5a7 7 0 0 1-7-7v-7a7 7 0 0 1 7-7Z" fill="#f7fbfa"/>
+  <circle cx="22" cy="30" r="2.5" fill="#eea94b"/>
+  <circle cx="31" cy="30" r="2.5" fill="#56b8c4"/>
+  <circle cx="40" cy="30" r="2.5" fill="#0d5c63"/>
+</svg>

@@ -15,6 +15,43 @@
 
   <section class="admin-section">
     <div>
+      <p class="eyebrow">Novo usuario</p>
+      <h2>Criar conta</h2>
+    </div>
+
+    <form class="admin-form user-create-form" method="post" action="/admin/users">
+      <label>
+        Nome
+        <input name="name" type="text" placeholder="Ex: Mariana Almeida" required>
+      </label>
+
+      <label>
+        E-mail
+        <input name="email" type="email" placeholder="Ex: mariana@empresa.com" required>
+      </label>
+
+      <label>
+        Senha inicial
+        <input name="password" type="password" minlength="6" required>
+      </label>
+
+      <div class="user-flags">
+        <label class="check-row">
+          <input name="is_admin" type="checkbox">
+          Administrador
+        </label>
+        <label class="check-row">
+          <input name="is_approved" type="checkbox" checked>
+          Aprovado
+        </label>
+      </div>
+
+      <button class="primary-button" type="submit">Criar usuario</button>
+    </form>
+  </section>
+
+  <section class="admin-section">
+    <div>
       <p class="eyebrow">Pedidos</p>
       <h2>Cadastros aguardando aprovacao</h2>
     </div>

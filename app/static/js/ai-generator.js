@@ -65,10 +65,7 @@ aiReplyForm.addEventListener("submit", async (event) => {
   const formData = new FormData(aiReplyForm);
 
   try {
-    const response = await fetch("/api/generate-reply", {
-      method: "POST",
-      body: formData,
-    });
+    const response = await fetch("/api/generate-reply", { method: "POST", body: formData });
     const data = await response.json();
 
     if (!response.ok) {
@@ -87,9 +84,7 @@ aiReplyForm.addEventListener("submit", async (event) => {
 
 copyGeneratedReply.addEventListener("click", async () => {
   const text = generatedReply.textContent.trim();
-  if (!text || text === "A resposta gerada aparecera aqui.") {
-    return;
-  }
+  if (!text || text === "A resposta gerada aparecera aqui.") return;
 
   await navigator.clipboard.writeText(text);
   setStatus("Copiado.");
