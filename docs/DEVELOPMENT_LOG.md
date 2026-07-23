@@ -2,6 +2,8 @@
 
 ## 2026-07-23
 
+- Added administrator-only user deletion with safeguards for the current account and the last approved administrator.
+- Consolidated active, save and delete controls into one aligned action row across editable administration cards.
 - Rebuilt the authenticated navigation as a compact sidebar with account context and a clearer separation for administrative tools.
 - Redesigned the dashboard as a two-step support desk: context first, review second.
 - Added a conversation-inspired reply preview and a distinct DataAnswers typography, spacing and color system.

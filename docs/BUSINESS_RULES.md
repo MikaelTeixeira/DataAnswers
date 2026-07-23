@@ -9,3 +9,10 @@
 - Token values are not stored with the token definition. They must be supplied in the **Informacoes dos tokens** field when generating a reply.
 - The AI may use the received message as additional context, but must not invent missing token values.
 - When a required token has no supplied value, its marker is preserved for manual review.
+
+## Users
+
+- Only administrators may delete user accounts.
+- An administrator cannot delete their own account.
+- The system must always retain at least one approved administrator.
+- Deleting a user also removes private structures, personalities and tokens owned by that account.

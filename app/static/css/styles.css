@@ -442,8 +442,21 @@ select:focus {
 
 .card-actions {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.record-actions {
+  margin-top: 2px;
+}
+
+.record-actions form {
+  display: contents;
+}
+
+.record-actions .delete-button {
+  margin-left: 4px;
 }
 
 .admin-page,
@@ -533,6 +546,24 @@ select:focus {
   display: grid;
   gap: 8px;
   min-width: 140px;
+}
+
+.user-delete-form {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.user-delete-form span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.user-delete-form .delete-button {
+  flex: 0 0 auto;
 }
 
 .status-pill {
@@ -714,6 +745,11 @@ select:focus {
 
   .user-create-form {
     grid-template-columns: 1fr;
+  }
+
+  .user-delete-form {
+    align-items: stretch;
+    flex-direction: column;
   }
 }
 

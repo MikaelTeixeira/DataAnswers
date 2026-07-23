@@ -50,7 +50,7 @@
           <span>{% if personality.owner_id %}Minha personalidade{% else %}Global{% endif %}</span>
         </div>
         {% if can_edit %}
-          <form method="post" action="/personalities/{{ personality.id }}/update">
+          <form id="personalityUpdate{{ personality.id }}" method="post" action="/personalities/{{ personality.id }}/update">
             <div class="form-grid">
               <label>
                 Nome
@@ -61,17 +61,17 @@
                 <textarea name="instructions" rows="5" required>{{ personality.instructions }}</textarea>
               </label>
             </div>
-            <div class="card-actions">
-              <label class="check-row">
-                <input name="is_active" type="checkbox" {% if personality.is_active %}checked{% endif %}>
-                Ativa
-              </label>
-              <button class="primary-button" type="submit">Salvar</button>
-            </div>
           </form>
-          <form method="post" action="/personalities/{{ personality.id }}/delete">
-            <button class="delete-button" type="submit">Excluir</button>
-          </form>
+          <div class="card-actions record-actions">
+            <label class="check-row">
+              <input form="personalityUpdate{{ personality.id }}" name="is_active" type="checkbox" {% if personality.is_active %}checked{% endif %}>
+              Ativa
+            </label>
+            <button class="primary-button" form="personalityUpdate{{ personality.id }}" type="submit">Salvar</button>
+            <form method="post" action="/personalities/{{ personality.id }}/delete">
+              <button class="delete-button" type="submit">Excluir</button>
+            </form>
+          </div>
         {% else %}
           <div class="readonly-structure">
             <h2>{{ personality.name }}</h2>
